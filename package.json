@@ -1,0 +1,21 @@
+{
+  "name": "moss-skill-avatar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:avatar": "vite --host 127.0.0.1 --port 4173 --strictPort",
+    "avatar:launch": "node scripts/launch-memory-avatar.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.177.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.177.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  }
+}
