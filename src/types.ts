@@ -72,6 +72,58 @@ export interface SharedContextEntry {
   timestamp: number;
 }
 
+export type BridgeSource =
+  | "avatar-page"
+  | "codex-host"
+  | "codex-app"
+  | "bridge-server"
+  | "browser-host"
+  | string;
+
+export type MemoryEventType =
+  | "session.started"
+  | "context.updated"
+  | "user.message"
+  | "persona.message"
+  | "status.changed"
+  | "sync.requested";
+
+export interface MemoryEventPayloadMap {
+  "session.started": {
+    reason?: string;
+  };
+  "context.updated": {
+    entries: SharedContextEntry[];
+    replace?: boolean;
+  };
+  "user.message": {
+    text: string;
+  };
+  "persona.message": {
+    text: string;
+  };
+  "status.changed": {
+    state: string;
+    detail?: string;
+  };
+  "sync.requested": {
+    reason: string;
+    unreadCount?: number;
+  };
+}
+
+export type MemoryEvent<T extends MemoryEventType = MemoryEventType> = {
+  type: T;
+  sessionId: string;
+  bridgeId?: string;
+  threadId?: string;
+  personId?: string;
+  payload: MemoryEventPayloadMap[T];
+  source?: BridgeSource;
+  timestamp?: number;
+  eventId?: number;
+};
+
 export type BridgeEventType =
   | "bridge:ready"
   | "bridge:request-context"
@@ -110,4 +162,9 @@ export type BridgeEnvelope<T extends BridgeEventType = BridgeEventType> = {
   type: T;
   bridgeId: string;
   payload: BridgePayloadMap[T];
+  sessionId?: string;
+  threadId?: string;
+  source?: BridgeSource;
+  timestamp?: number;
+  eventId?: number;
 };

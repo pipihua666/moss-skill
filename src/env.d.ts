@@ -35,19 +35,62 @@ interface SpeechRecognitionConstructor {
 interface Window {
   SpeechRecognition?: SpeechRecognitionConstructor;
   webkitSpeechRecognition?: SpeechRecognitionConstructor;
+  launchMemoryUser?: (
+    personId: string,
+    options?: {
+      sessionId?: string;
+      bridgeId?: string;
+      threadId?: string;
+      context?: string | string[];
+      serverUrl?: string;
+      bridgeServerUrl?: string;
+    }
+  ) => void;
   launchMemoryAvatar?: (
     personId: string,
     options?: {
+      sessionId?: string;
       bridgeId?: string;
+      threadId?: string;
       context?: string | string[];
+      serverUrl?: string;
+      bridgeServerUrl?: string;
     }
   ) => void;
+  mossCodexUI?: {
+    open: (
+      personId: string,
+      options?: {
+        sessionId?: string;
+        bridgeId?: string;
+        threadId?: string;
+        context?: string | string[];
+        serverUrl?: string;
+        bridgeServerUrl?: string;
+      }
+    ) => void;
+  };
   mossMemoryBridge?: {
+    launchUser: (
+      personId: string,
+      options?: {
+        sessionId?: string;
+        bridgeId?: string;
+        threadId?: string;
+        context?: string | string[];
+        serverUrl?: string;
+        bridgeServerUrl?: string;
+      }
+    ) => void;
     launchAvatar: (
       personId: string,
       options?: {
+        sessionId?: string;
         bridgeId?: string;
+        threadId?: string;
         context?: string | string[];
+        serverUrl?: string;
+        bridgeServerUrl?: string;
       }
     ) => void;
     pushContext: (entries: string | string[], replace?: boolean) => void;

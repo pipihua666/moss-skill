@@ -5,8 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:avatar": "vite --host 127.0.0.1 --port 4173 --strictPort",
-    "avatar:launch": "node scripts/launch-memory-avatar.mjs",
+    "dev:user": "vite --host 127.0.0.1 --port 4173 --strictPort",
+    "bridge:server": "node scripts/memory-app-server.mjs",
+    "app:server": "node scripts/memory-app-server.mjs",
+    "user": "node scripts/launch-memory-user.mjs",
+    "codex:launch": "node scripts/codex-launch-memory.mjs",
+    "codex:push-context": "node scripts/codex-push-context.mjs",
+    "codex:sync-events": "node scripts/codex-sync-events.mjs",
+    "codex:read-events": "node scripts/codex-read-events.mjs",
+    "app:launch": "node scripts/codex-launch-memory.mjs",
+    "app:sync": "node scripts/codex-sync-events.mjs",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },

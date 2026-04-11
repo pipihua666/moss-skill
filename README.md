@@ -151,7 +151,7 @@ npm install
 npm run dev
 ```
 
-打开首页后，可以从人物列表里点击“唤起虚拟人”；也可以直接访问带人物参数的地址，例如：
+打开首页后，可以从人物列表里点击“打开回忆”；也可以直接访问带人物参数的地址，例如：
 
 ```text
 http://localhost:5173/?person=奶奶
@@ -160,17 +160,66 @@ http://localhost:5173/?person=奶奶
 如果你想让技能在“切换到某个回忆人物”时自动把页面拉起来，可以直接用仓库内置脚本：
 
 ```bash
-npm run avatar:launch -- "奶奶"
+npm run user -- "奶奶"
 ```
 
-这个命令会做四件事：
+这个命令会做几件事：
 
-- 检查 `http://127.0.0.1:4173/` 是否已经有本项目的虚拟人服务
-- 没有的话自动在后台启动 `npm run dev:avatar`
+- 检查 `http://127.0.0.1:4173/` 是否已经有本项目的人物回忆服务
+- 没有的话自动在后台启动 `npm run dev:user`
+- 检查本地 memory app server 是否可用；没有的话自动补上
 - 等待服务就绪
-- 自动打开对应人物页面，例如 `http://127.0.0.1:4173/?person=奶奶`
+- 自动打开带 `session` 和 `server` 参数的人物回忆页面
 
 这样以后技能切到人物时，就不是“纯口头到场”，而是连浏览器里的机器人都一起上班。
+
+如果你是从 Codex 宿主侧接这套能力，优先用下面这组桥接命令：
+
+```bash
+npm run codex:launch -- "奶奶" "用户刚刚说今天特别想奶奶"
+```
+
+这个命令会：
+
+- 确保前端页服务和本地 memory app server 都已就绪
+- 创建或复用当前人物的 `sessionId`
+- 自动打开带 `session` 和 `server` 参数的人物回忆页
+- 把当前触发消息作为首批上下文塞进网页
+- 尝试为该人物预热一个本地 `codex app-server` thread，后续同步时就不用现煮现等
+
+后续主会话继续推进时，可以显式补充上下文：
+
+```bash
+npm run codex:push-context -- "奶奶" "用户补充：奶奶总说别着急，慢慢来"
+```
+
+如果你希望网页和当前 Codex 会话在后续回合里真正保持“有来有回”，优先用这条：
+
+```bash
+npm run codex:sync-events -- "奶奶" "用户这一轮刚说：今天有点想你"
+```
+
+这个命令会：
+
+- 读取该人物回忆页自上次同步以来的未读事件
+- 自动推进本地已读游标，避免下次把旧消息再捞一遍
+- 把“当前这一轮”的最新上下文顺手推回网页
+- 触发本地 `codex app-server` 的当前 thread 跑一轮 turn
+- 以 JSON 输出 `promptContext`、`unreadEvents` 和 `appReply`，方便宿主 Agent 直接纳入当前回复
+
+如果你只是想查看网页回传了什么，而不推进已读游标，还是可以继续用只读命令：
+
+如果你要读取网页回传的消息和状态：
+
+```bash
+npm run codex:read-events -- "奶奶"
+```
+
+只想单独启动桥服务做调试，也可以直接跑：
+
+```bash
+npm run app:server
+```
 
 如果当前运行环境是受限沙箱，拦了“本地端口监听”或“打开浏览器”这两步，脚本会自动降级为：
 
@@ -181,22 +230,33 @@ npm run avatar:launch -- "奶奶"
 如果你想从别的上下文里直接拉起页面，前端还暴露了一个全局方法：
 
 ```js
-window.launchMemoryAvatar("奶奶");
+window.launchMemoryUser("奶奶");
 ```
 
 ### 和宿主 Agent 双向通信
 
+现在的默认主链路是：
+
+- 浏览器回忆页 <-> 本地 memory app server
+- memory app server <-> 本地 `codex app-server`
+- `codex app-server` thread 复用人物档案，把宿主这边的同步请求串成连续会话
+
+换句话说，现在不是单纯把网页消息塞进一个 HTTP 盒子里了，而是多了一层真正的 Codex 会话中枢，终于不像两台对讲机靠吼。
+
 虚拟人页现在支持和当前 Agent 应用做双向桥接：
 
-- 页面启动后会主动发 `bridge:ready` 和 `bridge:request-context`
-- 宿主应用可以把当前聊天上下文通过 `bridge:context-update` 推给网页
-- 网页里用户发出的消息会回传 `bridge:user-message`
-- 虚拟人回复和状态变化会回传 `bridge:persona-message`、`bridge:status`
+- 页面启动后会主动发 `session.started` 和 `sync.requested`
+- 宿主应用可以把当前聊天上下文通过 `context.updated` 推给网页
+- 网页里用户发出的消息会回传 `user.message`
+- 虚拟人回复和状态变化会回传 `persona.message`、`status.changed`
+- URL 带上 `server=http://127.0.0.1:4174` 时，页面会优先走本地 HTTP + SSE 宿主桥
+- 如果宿主桥不可达，页面会退回 `postMessage` / `BroadcastChannel`，不至于桥一堵就全员站河两岸喊话
 
 如果宿主环境直接运行在浏览器里，可以这样拉起并注入上下文：
 
 ```js
-window.mossMemoryBridge.launchAvatar("奶奶", {
+window.mossMemoryBridge.launchUser("奶奶", {
+  serverUrl: "http://127.0.0.1:4174",
   context: [
     "用户刚刚提到今天特别想奶奶",
     "当前主会话里正在聊小时候被鼓励的记忆"
@@ -212,7 +272,19 @@ window.mossMemoryBridge.pushContext([
 ]);
 ```
 
-如果宿主想自己接管协议，也可以监听 `postMessage` / `BroadcastChannel`，消息类型见源码里的 `BridgeEventType`。这层桥的目的很简单：别让网页像失联分舱，主会话聊到哪，它就跟到哪。
+如果宿主想自己接管协议，也可以直接对接本地 memory app server：
+
+- `GET /health`
+- `POST /api/memory/launch`
+- `POST /api/memory/context`
+- `POST /api/memory/event`
+- `POST /api/memory/sync`
+- `GET /api/memory/events?sessionId=...&after=...`
+- `GET /api/memory/stream?sessionId=...`
+
+新接口默认吐 `session.started/context.updated/user.message/persona.message/status.changed/sync.requested` 这一套会话事件；旧的 `/api/bridge/*` 兼容路径和 `BridgeEventType` 还留着，给老调用方一个体面退休通道。
+
+不过这里要说句人话：它现在是“按回合同步”，不是“实时插嘴”。也就是说，网页里的新消息会在下一次 `codex:sync-events` 时被 Codex 看见，而不是在当前回答生成到一半时突然跳出来拍桌子。这不是项目偷懒，是终端 Agent 也得讲点交通规则。
 
 ## 参考
 

@@ -15,7 +15,7 @@
 
 | name | aliases | file | relationship | status | last_updated |
 | --- | --- | --- | --- | --- | --- |
-| 暂无人物 | - | - | - | - | - |
+| 奶奶 | 奶奶 | `references/奶奶.md` | 奶奶 | 已建立基础记忆 | 2026-04-09 |
 
 ## 新增人物模板
 
