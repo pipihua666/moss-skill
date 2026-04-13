@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AXA // ACTIVE LISTENING</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-container": "#ad009b",
+                    "primary-container": "#00f1fd",
+                    "tertiary-fixed-dim": "#959aff",
+                    "secondary": "#ff59e3",
+                    "inverse-surface": "#fcf8fb",
+                    "on-secondary-fixed": "#640059",
+                    "surface-container-lowest": "#000000",
+                    "outline-variant": "#48474a",
+                    "on-error-container": "#ffa8a3",
+                    "error-dim": "#d7383b",
+                    "on-secondary": "#42003a",
+                    "on-surface": "#f9f5f8",
+                    "on-tertiary": "#191b80",
+                    "tertiary-dim": "#9094fa",
+                    "primary-dim": "#00e2ed",
+                    "primary": "#96f8ff",
+                    "secondary-fixed-dim": "#ffa8e7",
+                    "background": "#0e0e10",
+                    "error-container": "#9f0519",
+                    "on-primary-fixed": "#004145",
+                    "surface-container-highest": "#262528",
+                    "secondary-dim": "#ff59e3",
+                    "surface-container-high": "#1f1f22",
+                    "on-tertiary-fixed": "#030062",
+                    "on-secondary-container": "#fff5f8",
+                    "tertiary-container": "#9094fa",
+                    "surface-container-low": "#131315",
+                    "on-primary": "#005f64",
+                    "surface-bright": "#2c2c2f",
+                    "on-background": "#f9f5f8",
+                    "on-error": "#490006",
+                    "on-primary-fixed-variant": "#006065",
+                    "tertiary-fixed": "#a6a9ff",
+                    "on-secondary-fixed-variant": "#950085",
+                    "outline": "#767577",
+                    "on-tertiary-fixed-variant": "#292b8d",
+                    "inverse-primary": "#006a6f",
+                    "surface": "#0e0e10",
+                    "error": "#ff716c",
+                    "primary-fixed": "#00f1fd",
+                    "surface-variant": "#262528",
+                    "on-primary-container": "#00565a",
+                    "secondary-fixed": "#ffbeeb",
+                    "surface-dim": "#0e0e10",
+                    "tertiary": "#9fa3ff",
+                    "primary-fixed-dim": "#00e2ed",
+                    "on-surface-variant": "#adaaad",
+                    "on-tertiary-container": "#080575",
+                    "surface-tint": "#96f8ff",
+                    "inverse-on-surface": "#565557",
+                    "surface-container": "#19191c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Space Grotesk"],
+                    "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(255,255,255,0.02) 50%);
+            background-size: 100% 4px;
+        }
+        .holographic-frame {
+            border: 1px solid rgba(150, 248, 255, 0.1);
+            position: relative;
+        }
+        .holographic-frame::before, .holographic-frame::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border: 2px solid #96f8ff;
+        }
+        .holographic-frame::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+        .holographic-frame::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+        
+        .waveform-bar {
+            width: 4px;
+            background: #ff59e3;
+            box-shadow: 0 0 10px #ff59e3;
+            transition: height 0.1s ease-in-out;
+        }
+        .clip-custom {
+            clip-path: polygon(10% 0, 90% 0, 100% 100%, 0% 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden selection:bg-secondary selection:text-background">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0e0e10]/80 backdrop-blur-xl border-b-2 border-[#96f8ff]/20 shadow-[0_4px_20px_rgba(150,248,255,0.1)]">
+<div class="flex items-center gap-4">
+<span class="font-['Space_Grotesk'] font-black text-[#96f8ff] drop-shadow-[0_0_8px_rgba(150,248,255,0.6)] text-lg">AXA // V-0.9</span>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<span class="font-['Space_Grotesk'] uppercase tracking-widest text-[10px] text-secondary animate-pulse">STATUS: [ACTIVE - LISTENING]</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95" data-icon="settings">settings</button>
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95" data-icon="terminal">terminal</button>
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95" data-icon="power_settings_new">power_settings_new</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] z-40 flex flex-col w-64 bg-[#131315]/60 backdrop-blur-2xl border-r border-[#96f8ff]/10 scanline">
+<div class="p-6 border-b border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest border border-primary/30 flex items-center justify-center relative">
+<span class="material-symbols-outlined text-primary text-sm" data-icon="shield">shield</span>
+<div class="absolute -top-1 -right-1 w-2 h-2 bg-secondary animate-ping"></div>
+</div>
+<div>
+<div class="font-['Space_Grotesk'] text-[10px] tracking-widest text-primary">OPERATOR_01</div>
+<div class="font-['Space_Grotesk'] text-[8px] tracking-tighter text-secondary opacity-80 uppercase">STATUS: SYNCED</div>
+</div>
+</div>
+</div>
+<nav class="flex-1 py-4">
+<a class="flex items-center gap-4 px-6 py-4 text-[#96f8ff]/40 hover:bg-[#131315] hover:text-[#96f8ff] transition-colors duration-200 group" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="history">history</span>
+<span class="font-['Space_Grotesk'] text-[10px] tracking-widest uppercase">ARCHIVE</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 text-[#96f8ff]/40 hover:bg-[#131315] hover:text-[#96f8ff] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="description">description</span>
+<span class="font-['Space_Grotesk'] text-[10px] tracking-widest uppercase">LOGS</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 text-[#96f8ff]/40 hover:bg-[#131315] hover:text-[#96f8ff] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="psychology">psychology</span>
+<span class="font-['Space_Grotesk'] text-[10px] tracking-widest uppercase">NEURAL</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-4 text-[#96f8ff]/40 hover:bg-[#131315] hover:text-[#96f8ff] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="database">database</span>
+<span class="font-['Space_Grotesk'] text-[10px] tracking-widest uppercase">MEMORY</span>
+</a>
+</nav>
+<div class="p-6">
+<button class="w-full py-3 bg-primary/10 border border-primary/30 text-primary font-['Space_Grotesk'] text-[10px] tracking-[0.2em] uppercase hover:bg-primary/20 transition-all active:scale-95">
+                NEW_SESSION
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pl-64 pt-16 h-screen w-full relative bg-surface overflow-hidden">
+<!-- Visualizer Background Ring -->
+<div class="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+<div class="relative w-[500px] h-[500px] rounded-full border-[1px] border-primary/20 animate-spin-slow">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary drop-shadow-[0_0_15px_#96f8ff]"></div>
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-secondary drop-shadow-[0_0_15px_#ff59e3]"></div>
+</div>
+<div class="absolute w-[600px] h-[600px] rounded-full border-[1px] border-secondary/10 animate-reverse-spin-slow"></div>
+</div>
+<!-- Center AI Subject -->
+<div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+<div class="relative group">
+<!-- Outer Glow Aura -->
+<div class="absolute -inset-16 bg-gradient-to-tr from-primary/30 to-secondary/30 rounded-full blur-[80px] animate-pulse"></div>
+<!-- Main AI Portrait / Visualization -->
+<div class="w-80 h-80 relative overflow-hidden holographic-frame bg-surface-container-low shadow-[0_0_100px_rgba(255,89,227,0.15)]">
+<img alt="AXA Interface" class="w-full h-full object-cover contrast-125" data-alt="A high-quality, semi-realistic 3D render of a beautiful female virtual assistant in an active listening state with focused expression, surrounded by holographic data streams and soft ripples." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTXIzCZQHIkin3G2Ss37Fq6xE1ubxW_a0YrdWuIH1frIPPy2XHQktHyersxpUOnQu9NRDLW-Yag4JFb8u6tSfjFtzEY1G5sDdS2NxEW_obYFCE4BA1ZP65G1YRb8qcbsesr19c2ebtOvHzZI-1ZeD7_HrYv2JfGuO5UJqDa9jdwO0dPTddYhd4qaPbQQWw5THpWuvYoOTGNIKJbsW8ALzNHwOq6ymPM-rR9B23CeN5vydEW5VZc5TTF9UzN9CiJaksU-N07XMFzvY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute inset-0 scanline opacity-30"></div>
+<!-- HUD Elements on Face -->
+<div class="absolute top-4 left-4 font-['Space_Grotesk'] text-[8px] text-primary tracking-widest uppercase">
+                        FACIAL_RECOGNITION: ENABLED<br/>
+                        VOICE_SYNC: 99.8%
+                    </div>
+<div class="absolute bottom-4 right-4 flex flex-col items-end gap-1">
+<div class="w-24 h-1 bg-surface-container-highest">
+<div class="h-full bg-secondary w-3/4 animate-pulse"></div>
+</div>
+<span class="font-['Space_Grotesk'] text-[8px] text-secondary tracking-widest">DATA_THROUGHPUT</span>
+</div>
+</div>
+</div>
+<!-- Listening UI State -->
+<div class="mt-12 text-center">
+<h2 class="font-headline font-bold text-4xl text-primary tracking-tighter drop-shadow-[0_0_15px_rgba(150,248,255,0.4)]">
+                    LISTENING<span class="animate-pulse">...</span>
+</h2>
+<p class="font-body text-secondary/70 tracking-widest text-xs mt-2 uppercase">Audio capture active // Local processing only</p>
+</div>
+</div>
+<!-- Perimeter Data Layout -->
+<div class="absolute top-8 right-8 w-64 p-4 bg-surface-container-low/40 backdrop-blur-md border-l-2 border-primary/40">
+<div class="flex justify-between items-center mb-4">
+<span class="text-[10px] text-primary tracking-[0.2em] font-bold">SYSTEM_LOGS</span>
+<span class="w-2 h-2 bg-primary animate-ping"></span>
+</div>
+<div class="space-y-3 font-['Space_Grotesk'] text-[9px] text-on-surface-variant">
+<div class="flex gap-2">
+<span class="text-secondary">[14:22:01]</span>
+<span>VOICE_INTENT_DETECTED</span>
+</div>
+<div class="flex gap-2">
+<span class="text-secondary">[14:22:03]</span>
+<span>NEURAL_ENGINE_WAKEUP</span>
+</div>
+<div class="flex gap-2">
+<span class="text-secondary">[14:22:05]</span>
+<span>ACTIVE_LISTENING_MODE_ON</span>
+</div>
+</div>
+</div>
+<div class="absolute bottom-40 left-8 max-w-xs">
+<div class="font-['Space_Grotesk'] text-[10px] text-primary mb-2 opacity-50">HEARTBEAT_MONITOR</div>
+<div class="flex items-end gap-1 h-12">
+<div class="waveform-bar h-[60%]"></div>
+<div class="waveform-bar h-[40%]"></div>
+<div class="waveform-bar h-[80%]"></div>
+<div class="waveform-bar h-[50%]"></div>
+<div class="waveform-bar h-[90%]"></div>
+<div class="waveform-bar h-[30%]"></div>
+<div class="waveform-bar h-[70%]"></div>
+</div>
+</div>
+<!-- Dynamic Audio Waveform Visualizer -->
+<div class="absolute bottom-24 left-1/2 -translate-x-1/2 w-full max-w-2xl px-12 z-20">
+<div class="flex items-center justify-center gap-1.5 h-24">
+<!-- Artificial Waveform bars -->
+<div class="w-1 bg-primary/40 h-4 rounded-full"></div>
+<div class="w-1 bg-primary/60 h-8 rounded-full"></div>
+<div class="w-1 bg-primary/80 h-16 rounded-full"></div>
+<div class="w-1 bg-primary h-20 shadow-[0_0_15px_#96f8ff] rounded-full"></div>
+<div class="w-1 bg-secondary h-24 shadow-[0_0_15px_#ff59e3] rounded-full"></div>
+<div class="w-1 bg-secondary h-20 shadow-[0_0_15px_#ff59e3] rounded-full"></div>
+<div class="w-1 bg-secondary h-16 shadow-[0_0_15px_#ff59e3] rounded-full"></div>
+<div class="w-1 bg-secondary/80 h-24 rounded-full"></div>
+<div class="w-1 bg-secondary/60 h-12 rounded-full"></div>
+<div class="w-1 bg-primary h-20 shadow-[0_0_15px_#96f8ff] rounded-full"></div>
+<div class="w-1 bg-primary/80 h-24 rounded-full"></div>
+<div class="w-1 bg-primary/60 h-16 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-8 rounded-full"></div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex flex-col items-center justify-center pb-8 h-32 bg-transparent">
+<button class="flex items-center justify-center bg-[#ff59e3] text-[#0e0e10] px-16 py-6 clip-custom group hover:scale-105 transition-all duration-300 animate-pulse shadow-[0_-10px_50px_rgba(255,89,227,0.5)]">
+<span class="material-symbols-outlined text-2xl mr-4" data-icon="mic" style="font-variation-settings: 'FILL' 1;">mic</span>
+<span class="font-['Space_Grotesk'] font-black tracking-[0.3em] text-lg uppercase">LISTENING...</span>
+</button>
+</footer>
+<!-- CSS Animation Helpers (since we can't use JS) -->
+<style>
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes reverse-spin-slow {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        .animate-spin-slow {
+            animation: spin-slow 20s linear infinite;
+        }
+        .animate-reverse-spin-slow {
+            animation: reverse-spin-slow 15s linear infinite;
+        }
+        
+        /* Waveform height animation simulation */
+        @keyframes wave {
+            0%, 100% { height: 10%; }
+            50% { height: 80%; }
+        }
+        .waveform-bar {
+            animation: wave 1.5s ease-in-out infinite;
+        }
+        .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+        .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
+        .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
+        .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
+        .waveform-bar:nth-child(6) { animation-delay: 0.5s; }
+        .waveform-bar:nth-child(7) { animation-delay: 0.6s; }
+    </style>
+</body></html>

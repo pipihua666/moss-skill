@@ -22,20 +22,7 @@ Use this skill to preserve and continue remembrance through structured memory fi
 
 It keeps one person per file, lets the model find the right memory quickly, and turns the current reply into that person's first-person voice only when the record supports it.
 
-## 使用方式
-
-### Claude Code
-
-手动引入到用户技能目录：
-
-```bash
-mkdir -p ~/.claude/skills
-ln -s "/absolute/path/to/moss-skill" ~/.claude/skills/moss-skill
-```
-
-重启或重新进入 `claude` 后，Claude Code 会按技能描述自动发现并触发。
-
-### Codex
+## Codex 使用方式
 
 仓库内引入：
 
@@ -55,26 +42,6 @@ Codex 支持自动触发，也支持显式调用：
 
 ```text
 $moss-skill 我想外婆了
-```
-
-### Gemini CLI
-
-Gemini CLI 没有沿用这套技能目录约定，最稳妥的引入方式是把本技能挂到项目的 `GEMINI.md` 上下文里：
-
-```bash
-cat > GEMINI.md <<'EOF'
-# Project memory
-
-@./SKILL.md
-@./references/MEMORY.md
-@./references/PERSON_TEMPLATE.md
-EOF
-```
-
-启动 `gemini` 后刷新上下文：
-
-```text
-/memory refresh
 ```
 
 ## Workflow
@@ -136,16 +103,13 @@ npm run codex:launch -- "奶奶" "用户刚刚说今天特别想奶奶"
 
 ## If The Person Does Not Exist
 
-Ask 4-6 concise questions, then wait. Cover the minimum needed to make the memory useful:
+Ask 3 concise questions, then wait. Only gather the minimum needed to identify the person and ground the current reply:
 
 - What should this person be called? Include aliases or how the user usually addresses them.
 - What is their most recognizable speaking style or catchphrase?
-- How do they usually comfort, tease, remind, or disagree with people?
-- What habits, gestures, routines, or small actions make them feel like themselves?
-- What memory, scene, object, or place is strongly linked to them?
-- What must never be guessed, imitated too hard, or invented about this person?
+- What memory, scene, object, or place is most strongly linked to them right now?
 
-If the user is emotionally overwhelmed, reduce this to the first three questions and continue later.
+Do not expand into a longer questionnaire unless the user later chooses to enrich the memory file.
 
 ## Memory File Rules
 

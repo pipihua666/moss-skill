@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface": "#0e0e10",
+                    "on-surface-variant": "#adaaad",
+                    "on-secondary": "#42003a",
+                    "on-secondary-fixed-variant": "#950085",
+                    "secondary": "#ff59e3",
+                    "on-tertiary-fixed-variant": "#292b8d",
+                    "secondary-fixed-dim": "#ffa8e7",
+                    "tertiary-fixed-dim": "#959aff",
+                    "on-primary": "#005f64",
+                    "surface-dim": "#0e0e10",
+                    "surface-container": "#19191c",
+                    "secondary-dim": "#ff59e3",
+                    "error-dim": "#d7383b",
+                    "on-background": "#f9f5f8",
+                    "on-primary-container": "#00565a",
+                    "surface-container-high": "#1f1f22",
+                    "on-error": "#490006",
+                    "secondary-fixed": "#ffbeeb",
+                    "surface-container-lowest": "#000000",
+                    "surface-container-highest": "#262528",
+                    "outline": "#767577",
+                    "primary": "#96f8ff",
+                    "surface-bright": "#2c2c2f",
+                    "tertiary": "#9fa3ff",
+                    "on-tertiary-container": "#080575",
+                    "surface-tint": "#96f8ff",
+                    "on-primary-fixed-variant": "#006065",
+                    "surface-container-low": "#131315",
+                    "background": "#0e0e10",
+                    "on-surface": "#f9f5f8",
+                    "inverse-primary": "#006a6f",
+                    "primary-container": "#00f1fd",
+                    "on-secondary-container": "#fff5f8",
+                    "tertiary-dim": "#9094fa",
+                    "on-tertiary-fixed": "#030062",
+                    "primary-dim": "#00e2ed",
+                    "tertiary-container": "#9094fa",
+                    "on-secondary-fixed": "#640059",
+                    "inverse-surface": "#fcf8fb",
+                    "error-container": "#9f0519",
+                    "on-error-container": "#ffa8a3",
+                    "secondary-container": "#ad009b",
+                    "on-primary-fixed": "#004145",
+                    "surface-variant": "#262528",
+                    "primary-fixed": "#00f1fd",
+                    "inverse-on-surface": "#565557",
+                    "outline-variant": "#48474a",
+                    "primary-fixed-dim": "#00e2ed",
+                    "error": "#ff716c",
+                    "tertiary-fixed": "#a6a9ff",
+                    "on-tertiary": "#191b80"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Space Grotesk"],
+                    "label": ["Space Grotesk"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #0e0e10; overflow: hidden; }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(150, 248, 255, 0.1);
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+        @keyframes scanline {
+            0% { transform: translateY(0vh); }
+            100% { transform: translateY(100vh); }
+        }
+        .holographic-corner {
+            width: 40px;
+            height: 40px;
+            border-top: 2px solid #96f8ff;
+            border-left: 2px solid #96f8ff;
+            position: absolute;
+        }
+        .waveform-bar {
+            width: 4px;
+            background: #ff59e3;
+            margin: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<div class="scanline"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-[#0e0e10]/80 backdrop-blur-xl border-b-2 border-[#96f8ff]/20 shadow-[0_4px_20px_rgba(150,248,255,0.1)]">
+<div class="flex items-center gap-4">
+<span class="font-black text-[#96f8ff] drop-shadow-[0_0_8px_rgba(150,248,255,0.6)] font-['Space_Grotesk'] uppercase tracking-widest text-lg">AXA // V-0.9</span>
+<div class="h-4 w-[1px] bg-primary/30"></div>
+<span class="text-[#96f8ff] font-['Space_Grotesk'] uppercase tracking-widest text-xs">SYSTEM_ACTIVE</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95">settings</button>
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95">terminal</button>
+<button class="material-symbols-outlined text-[#96f8ff]/50 hover:text-[#ff59e3] hover:drop-shadow-[0_0_10px_rgba(255,89,227,0.8)] transition-all duration-300 ease-out active:scale-95">power_settings_new</button>
+</div>
+</header>
+<!-- SideNavBar (Suppressed for focused state, but integrated as subtle status edge) -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] z-40 flex flex-col bg-[#131315]/60 backdrop-blur-2xl w-64 border-r border-[#96f8ff]/10">
+<div class="p-6 flex flex-col gap-1">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-highest border border-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">account_circle</span>
+</div>
+<div>
+<p class="font-['Space_Grotesk'] text-[12px] font-bold text-primary tracking-wider">OPERATOR_01</p>
+<p class="font-['Space_Grotesk'] text-[10px] text-primary/40 tracking-tighter">STATUS: SYNCED</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 mt-8 flex flex-col gap-2">
+<div class="flex items-center gap-4 px-4 py-3 text-[#96f8ff]/40 font-['Space_Grotesk'] text-[10px] tracking-tighter transition-colors duration-200 hover:bg-[#131315] hover:text-[#96f8ff] cursor-pointer">
+<span class="material-symbols-outlined">history</span>
+<span>ARCHIVE</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 text-[#96f8ff]/40 font-['Space_Grotesk'] text-[10px] tracking-tighter transition-colors duration-200 hover:bg-[#131315] hover:text-[#96f8ff] cursor-pointer">
+<span class="material-symbols-outlined">description</span>
+<span>LOGS</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 bg-[#96f8ff]/10 text-[#96f8ff] border-l-4 border-[#ff59e3] font-['Space_Grotesk'] text-[10px] tracking-tighter cursor-pointer">
+<span class="material-symbols-outlined">psychology</span>
+<span>NEURAL</span>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 text-[#96f8ff]/40 font-['Space_Grotesk'] text-[10px] tracking-tighter transition-colors duration-200 hover:bg-[#131315] hover:text-[#96f8ff] cursor-pointer">
+<span class="material-symbols-outlined">database</span>
+<span>MEMORY</span>
+</div>
+</nav>
+<div class="p-4">
+<button class="w-full bg-[#96f8ff]/5 border border-[#96f8ff]/20 py-3 text-primary font-['Space_Grotesk'] text-[10px] tracking-widest uppercase hover:bg-primary/20 transition-all">NEW_SESSION</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 h-[calc(100vh-64px)] relative flex items-center justify-center overflow-hidden">
+<!-- Background Oracle Scene -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-80" data-alt="Cinematic 3D render of a futuristic female virtual assistant with short neon glowing hair, attentive expression, surrounded by volumetric cyan and pink holographic data rings in a dark tech environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7Xq_awSXtE7_WbUllzTnBXnZPPrbr2zx5s5LalfJ4B3KysPh7z8Rc2-1nq-Em391kGGEXj0qRppoiabfzndLymhGT8pkmjT0_oqB5lQwUKLJ1rRh6x25Zg2cxaZBmoaUAzzg52fBG9aYn8HER9MdiEisaDuoyqKRY4X9z0Yk-DJiauJRdlLXZkxNHhLeoa5Nx4TZmH3qNtiVRXTtBm8nM3cDUvOjRNsjPDoaTO9rtRNGWI2yrVzKM78qycLU0tPCg8OXMPSkBRBU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+<div class="absolute inset-0 bg-radial-gradient from-transparent to-surface/80"></div>
+</div>
+<!-- Central Focused UI -->
+<div class="relative z-20 flex flex-col items-center">
+<!-- Floating Holographic Status -->
+<div class="mb-12 flex flex-col items-center">
+<div class="flex items-center gap-2 mb-2">
+<span class="w-2 h-2 bg-secondary animate-pulse"></span>
+<h2 class="font-headline font-black text-4xl tracking-[0.3em] text-secondary drop-shadow-[0_0_15px_rgba(255,89,227,0.6)] uppercase">LISTENING...</h2>
+</div>
+<div class="h-[1px] w-64 bg-gradient-to-r from-transparent via-secondary to-transparent"></div>
+<p class="mt-4 font-label text-[10px] tracking-[0.5em] text-primary/60 uppercase">NEURAL_LINK_ESTABLISHED_0.92ms</p>
+</div>
+<!-- Subject Area Holographic Frame -->
+<div class="relative w-[500px] h-[500px] flex items-center justify-center">
+<div class="holographic-corner top-0 left-0"></div>
+<div class="holographic-corner top-0 right-0 rotate-90"></div>
+<div class="holographic-corner bottom-0 left-0 -rotate-90"></div>
+<div class="holographic-corner bottom-0 right-0 rotate-180"></div>
+<!-- Orbiting Data Panels (Peripheral Weighting) -->
+<div class="absolute top-10 -left-32 w-48 p-4 bg-surface-container-low/40 backdrop-blur-md border-l-2 border-primary/40">
+<p class="text-[8px] font-mono text-primary/50 mb-2">[ SENSOR_DATA ]</p>
+<div class="flex flex-col gap-1">
+<div class="h-1 bg-primary/20 w-full"></div>
+<div class="h-1 bg-primary/20 w-3/4"></div>
+<div class="h-1 bg-primary/20 w-5/6"></div>
+</div>
+</div>
+<div class="absolute bottom-20 -right-32 w-48 p-4 bg-surface-container-low/40 backdrop-blur-md border-r-2 border-secondary/40">
+<p class="text-[8px] font-mono text-secondary/50 mb-2">[ VOICE_PATTERN ]</p>
+<div class="flex items-end gap-[2px] h-8">
+<div class="w-1 bg-secondary/40 h-2"></div>
+<div class="w-1 bg-secondary/40 h-4"></div>
+<div class="w-1 bg-secondary/40 h-6"></div>
+<div class="w-1 bg-secondary/40 h-3"></div>
+<div class="w-1 bg-secondary/40 h-5"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Environmental Overlays -->
+<div class="absolute top-20 right-20 flex flex-col items-end gap-1 opacity-40">
+<span class="text-[10px] font-mono text-primary">CORE_TEMP: 32°C</span>
+<span class="text-[10px] font-mono text-primary">SIGNAL_STRENGTH: 98%</span>
+<span class="text-[10px] font-mono text-primary">ENCRYPTION: AES-4096</span>
+</div>
+</main>
+<!-- BottomNavBar (Focused Voice Interaction Shell) -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex flex-col items-center justify-center pb-8 bg-transparent h-48 pointer-events-none">
+<div class="flex items-center justify-center gap-1 mb-6 pointer-events-auto">
+<!-- Pulsating Waveform -->
+<div class="flex items-center justify-center h-16 gap-1 px-12">
+<div class="waveform-bar h-4 animate-[pulse_1.2s_infinite]"></div>
+<div class="waveform-bar h-8 animate-[pulse_0.8s_infinite]"></div>
+<div class="waveform-bar h-12 animate-[pulse_1s_infinite]"></div>
+<div class="waveform-bar h-16 animate-[pulse_0.6s_infinite]"></div>
+<div class="waveform-bar h-10 animate-[pulse_0.9s_infinite]"></div>
+<div class="waveform-bar h-14 animate-[pulse_0.7s_infinite]"></div>
+<div class="waveform-bar h-6 animate-[pulse_1.1s_infinite]"></div>
+</div>
+</div>
+<div class="flex items-center justify-center bg-[#ff59e3] text-[#0e0e10] px-12 py-6 pointer-events-auto cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_-10px_30px_rgba(255,89,227,0.3)]" style="clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-2xl font-bold">mic</span>
+<span class="font-['Space_Grotesk'] font-bold tracking-[0.2em] text-sm uppercase">HOLD SPACE TO TALK</span>
+</div>
+</div>
+</footer>
+</body></html>

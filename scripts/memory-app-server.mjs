@@ -54,7 +54,7 @@ const appClient = new CodexAppClient({
   cwd: getProjectRoot()
 });
 const workspaces = new Map();
-const threadIndex = new Map();
+const appThreadIndex = new Map();
 const pendingTurns = new Map();
 
 appClient.onNotification(({ method, params }) => {
@@ -184,6 +184,7 @@ function createThreadState(record = {}) {
 
   return {
     threadId: asNonEmptyString(record.threadId) ?? randomUUID(),
+    appThreadId: asNonEmptyString(record.appThreadId) ?? asNonEmptyString(record.threadId) ?? null,
     title: asNonEmptyString(record.title) ?? "新回合",
     preview: typeof record.preview === "string" ? record.preview : "",
     createdAt: asFiniteNumber(record.createdAt, Date.now()),
@@ -219,7 +220,7 @@ function createWorkspaceState(record = {}) {
   for (const threadRecord of threadRecords) {
     const thread = createThreadState(threadRecord);
     workspace.threads.set(thread.threadId, thread);
-    threadIndex.set(thread.threadId, workspace.sessionId);
+    registerAppThread(workspace.sessionId, thread);
   }
 
   if (!workspace.currentThreadId && workspace.threads.size > 0) {
@@ -232,6 +233,7 @@ function createWorkspaceState(record = {}) {
 function workspaceToStoredRecord(workspace) {
   const threads = Array.from(workspace.threads.values()).map((thread) => ({
     threadId: thread.threadId,
+    appThreadId: thread.appThreadId,
     title: thread.title,
     preview: thread.preview,
     createdAt: thread.createdAt,
@@ -278,6 +280,28 @@ function summarizeThread(thread) {
     messageCount: thread.messages.length,
     contextCount: thread.contextEntries.length
   };
+}
+
+function registerAppThread(workspaceId, thread) {
+  const appThreadId = asNonEmptyString(thread?.appThreadId);
+  const threadId = asNonEmptyString(thread?.threadId);
+
+  if (!workspaceId || !appThreadId || !threadId) {
+    return;
+  }
+
+  appThreadIndex.set(appThreadId, {
+    workspaceId,
+    threadId
+  });
+}
+
+function unregisterAppThread(appThreadId) {
+  if (!appThreadId) {
+    return;
+  }
+
+  appThreadIndex.delete(appThreadId);
 }
 
 function serializeMessage(message) {
@@ -642,31 +666,32 @@ async function ensureCodexThread(workspace, thread) {
   const developerInstructions = buildPersonaDeveloperInstructions(profile);
 
   if (
-    thread.threadId &&
+    thread.appThreadId &&
     thread.appReady &&
     thread.appGeneration === appClient.generation
   ) {
-    return thread.threadId;
+    return thread.appThreadId;
   }
 
-  if (thread.threadId) {
+  if (thread.appThreadId) {
     try {
       const resumed = await appClient.resumeThread({
-        threadId: thread.threadId,
+        threadId: thread.appThreadId,
         cwd: getProjectRoot(),
         developerInstructions
       });
-      thread.threadId = resumed.thread.id;
+      unregisterAppThread(thread.appThreadId);
+      thread.appThreadId = resumed.thread.id;
       thread.appGeneration = appClient.generation;
       thread.appReady = true;
       thread.lastError = null;
-      threadIndex.set(thread.threadId, workspace.sessionId);
-      return thread.threadId;
+      registerAppThread(workspace.sessionId, thread);
+      return thread.appThreadId;
     } catch (error) {
       thread.appReady = false;
       thread.lastError = error instanceof Error ? error.message : String(error);
-      threadIndex.delete(thread.threadId);
-      thread.threadId = null;
+      unregisterAppThread(thread.appThreadId);
+      thread.appThreadId = null;
     }
   }
 
@@ -675,12 +700,12 @@ async function ensureCodexThread(workspace, thread) {
     developerInstructions
   });
 
-  thread.threadId = started.thread.id;
+  thread.appThreadId = started.thread.id;
   thread.appGeneration = appClient.generation;
   thread.appReady = true;
   thread.lastError = null;
-  threadIndex.set(thread.threadId, workspace.sessionId);
-  return thread.threadId;
+  registerAppThread(workspace.sessionId, thread);
+  return thread.appThreadId;
 }
 
 async function createThread(workspace, options = {}) {
@@ -800,6 +825,9 @@ function cleanupExpiredWorkspaces() {
       continue;
     }
 
+    for (const thread of workspace.threads.values()) {
+      unregisterAppThread(thread.appThreadId);
+    }
     workspaces.delete(workspaceId);
   }
 }
@@ -840,7 +868,7 @@ function startPendingTurn(workspace, thread, input, options = {}) {
   persistWorkspace(workspace);
 
   appClient.runTurn({
-    threadId: thread.threadId,
+    threadId: thread.appThreadId,
     text: input
   }).then((result) => {
     const current = pendingTurns.get(thread.threadId);
@@ -950,19 +978,19 @@ async function sendUserTurn(workspace, thread, text) {
 }
 
 function handleAppNotification(method, params) {
-  const threadId = asNonEmptyString(params?.threadId);
-  if (!threadId) {
+  const appThreadId = asNonEmptyString(params?.threadId);
+  if (!appThreadId) {
     return;
   }
 
-  const workspaceId = threadIndex.get(threadId);
-  if (!workspaceId) {
+  const indexed = appThreadIndex.get(appThreadId);
+  if (!indexed) {
     return;
   }
 
-  const workspace = workspaces.get(workspaceId);
-  const thread = workspace?.threads.get(threadId);
-  const pending = pendingTurns.get(threadId);
+  const workspace = workspaces.get(indexed.workspaceId);
+  const thread = workspace?.threads.get(indexed.threadId);
+  const pending = pendingTurns.get(indexed.threadId);
 
   if (!workspace || !thread || !pending) {
     return;
@@ -982,7 +1010,7 @@ function handleAppNotification(method, params) {
     touchWorkspace(workspace);
     publishNotification(workspace, {
       type: "thread.message.delta",
-      threadId,
+      threadId: thread.threadId,
       payload: {
         messageId: assistant.id,
         delta,
@@ -991,7 +1019,7 @@ function handleAppNotification(method, params) {
     });
     publishNotification(workspace, {
       type: "thread.updated",
-      threadId,
+      threadId: thread.threadId,
       payload: {
         thread: summarizeThread(thread)
       }
@@ -1020,7 +1048,7 @@ function handleAppNotification(method, params) {
     );
     publishNotification(workspace, {
       type: "thread.message.completed",
-      threadId,
+      threadId: thread.threadId,
       payload: {
         message: serializeMessage(assistant),
         turnId: params?.turnId ?? null
@@ -1028,7 +1056,7 @@ function handleAppNotification(method, params) {
     });
     publishNotification(workspace, {
       type: "thread.updated",
-      threadId,
+      threadId: thread.threadId,
       payload: {
         thread: summarizeThread(thread)
       }
@@ -1249,7 +1277,7 @@ async function handleSync(req, res) {
     setThreadStatus(workspace, thread, "running", "宿主同步触发了一轮本地 Codex。");
 
     const result = await appClient.runTurn({
-      threadId: thread.threadId,
+      threadId: thread.appThreadId,
       text: buildSyncPrompt(workspace, thread, payload, unreadEvents)
     });
     const pending = pendingTurns.get(thread.threadId);

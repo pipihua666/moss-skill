@@ -128,6 +128,7 @@ function normalizeThreadRecord(record, fallbackThreadId = null) {
 
   return {
     threadId,
+    appThreadId: asNonEmptyString(record.appThreadId) ?? threadId,
     title: asNonEmptyString(record.title) ?? "新回合",
     preview: typeof record.preview === "string" ? record.preview : "",
     createdAt: asFiniteNumber(record.createdAt, Date.now()),

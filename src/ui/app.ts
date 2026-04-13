@@ -1,5 +1,4 @@
 import { loadMemoryIndex, loadPersonProfile } from "../data/memoryLoader";
-import { RobotScene } from "../avatar/robotScene";
 import { SpeechController, startVoiceSession, stopVoiceSession } from "../voice/speech";
 import type {
   MemoryIndex,
@@ -71,7 +70,7 @@ type ConsoleState = {
   workspace: WorkspaceRecord | null;
   currentThread: ThreadRecord | null;
   transport: "connecting" | "ws" | "sse" | "offline";
-  avatarOpen: boolean;
+  memoryPanelOpen: boolean;
   sending: boolean;
   voiceState: VoiceSessionState;
   voiceDetail: string;
@@ -202,21 +201,21 @@ function getPersonaLabel(profile: PersonProfile): string {
 function voiceLabel(state: VoiceSessionState): string {
   switch (state) {
     case "idle":
-      return "待机";
+      return "IDLE";
     case "requesting-permission":
-      return "申请麦克风";
+      return "REQUESTING";
     case "listening":
-      return "正在听";
+      return "LISTENING...";
     case "processing":
-      return "正在想";
+      return "PROCESSING...";
     case "speaking":
-      return "正在说";
+      return "SPEAKING";
     case "unsupported":
-      return "浏览器不支持";
+      return "UNSUPPORTED";
     case "error":
-      return "出错了";
+      return "ERROR";
     default:
-      return "待机";
+      return "IDLE";
   }
 }
 
@@ -374,31 +373,34 @@ function renderHome(container: HTMLElement, people: MemoryIndex[]): void {
 
   const featured = people[0];
   page.innerHTML = `
-    <section class="hero-panel">
+    <section class="hero-panel hero-panel-axa">
       <div class="hero-copy">
-        <p class="hero-kicker">MOSS Codex Console</p>
-        <h1>把虚拟人请进本地 Codex，别再让回忆只会静态站桩。</h1>
-        <p class="hero-text">这个版本不再是单页回忆舱，而是一套人物控制台。你可以先选一个人，再在同一个人物下开多条对话线程，让本地 Codex 用这个人的设定、节奏和边界继续接话。</p>
+        <p class="hero-kicker">AXA // Synthetic Oracle</p>
+        <h1>
+          <span class="hero-title-lead">让回忆不只会站着发呆</span>
+          <span class="hero-title-accent">也能像终端一样实时回应。</span>
+        </h1>
+        <p class="hero-text">当前版本把人物页重构成赛博语音控制台。你先选一个人，后面线程、上下文、语音和本地 Codex 都会继续在同一块 HUD 里干活，不再像几个零件临时拼桌吃饭。</p>
         <div class="hero-actions">
-          ${featured ? `<button type="button" class="primary-btn" data-role="open-person" data-person="${featured.name}">先唤起 ${featured.name}</button>` : ""}
-          <button type="button" class="ghost-btn" data-role="reload-home">刷新档案列表</button>
+          ${featured ? `<button type="button" class="primary-btn" data-role="open-person" data-person="${featured.name}">唤起 ${featured.name}</button>` : ""}
+          <button type="button" class="ghost-btn" data-role="reload-home">刷新档案</button>
         </div>
       </div>
       <div class="hero-meter">
         <article>
           <span>人物档案</span>
           <strong>${people.length}</strong>
-          <p>全部来自 <code>references/</code></p>
+          <p>全部来自 <code>references/</code> 的记忆库。</p>
         </article>
         <article>
           <span>控制方式</span>
-          <strong>本地中枢</strong>
-          <p>浏览器不直接碰 Codex，规矩些，活得久。</p>
+          <strong>Bridge Synced</strong>
+          <p>桥服务和页面分层工作，不让浏览器直接裸奔碰 Codex。</p>
         </article>
-        <article>
-          <span>交互重心</span>
-          <strong>线程 + 语音</strong>
-          <p>既能像聊天，又能像唤起一个人。</p>
+        <article class="hero-meter-visual">
+          <span>ACTIVE STATE</span>
+          <strong>Voice + Thread</strong>
+          <p>按住说话、切线程、带上下文，终于不像一张会发光的壁纸。</p>
         </article>
       </div>
     </section>
@@ -408,7 +410,7 @@ function renderHome(container: HTMLElement, people: MemoryIndex[]): void {
           <p class="hero-kicker">Available Personas</p>
           <h2>已经写进记忆库的人</h2>
         </div>
-        <p>点任何一张卡片都会直接进入人物控制台。页面会自动尝试接上本地记忆桥，少一点手工拧螺丝。</p>
+        <p>点任何一张卡片都会直接进入人物控制台。页面会自动尝试接上本地记忆桥，省得你每次都像在机房里手拧法兰。</p>
       </div>
       <div class="persona-grid" data-role="persona-grid"></div>
     </section>
@@ -639,7 +641,7 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     workspace: null,
     currentThread: null,
     transport: "connecting",
-    avatarOpen: false,
+    memoryPanelOpen: true,
     sending: false,
     voiceState: "idle",
     voiceDetail: "按住空格或按钮收音，也可以直接打字。",
@@ -669,135 +671,106 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
   const page = document.createElement("main");
   page.className = "console-page";
   page.innerHTML = `
-    <header class="console-header">
-      <div class="console-header-main">
-        <p class="console-kicker">MOSS Local Codex Persona</p>
-        <h1>${profile.name}</h1>
-        <p class="console-desc">${catchphrase}。${careText} 现在这页不是“纪念馆”，而是和本地 Codex 连着线的人物控制台。</p>
-      </div>
-      <div class="console-header-meta">
-        <div class="status-chip" data-role="transport-status">连接中</div>
-        <button type="button" class="ghost-btn" data-role="toggle-avatar">打开虚拟人浮层</button>
-        <button type="button" class="ghost-btn" data-role="back-home">返回人物列表</button>
-      </div>
-    </header>
-    <section class="console-layout">
-      <aside class="thread-rail">
-        <div class="rail-head">
-          <div>
-            <p class="console-kicker">Threads</p>
-            <h2>同一个人，不止一条话</h2>
-          </div>
-          <button type="button" class="primary-btn" data-role="new-thread">新建线程</button>
-        </div>
-        <div class="thread-list" data-role="thread-list"></div>
-      </aside>
+    <section class="console-layout console-layout-axa">
       <section class="chat-stage">
-        <div class="stage-head">
-          <div>
-            <p class="console-kicker">Live Conversation</p>
-            <h2 data-role="thread-title">正在接入</h2>
-          </div>
-          <div class="stage-head-meta">
-            <span data-role="thread-meta">等待线程数据</span>
-            <span data-role="voice-state">待机</span>
-          </div>
+        <div class="stage-backdrop" aria-hidden="true">
+          <img src="/design/axa-oracle.webp" alt="" />
         </div>
-        <div class="message-feed" data-role="message-feed"></div>
-        <form class="composer-panel" data-role="composer">
-          <label class="composer-field">
-            <span>对这个人说一句，或者补一段上下文</span>
-            <textarea name="message" rows="4" placeholder="你可以直接打字，也可以按住空格说话。"></textarea>
-          </label>
-          <div class="composer-row">
-            <div class="composer-actions">
-              <button type="button" class="hold-btn" data-role="hold-voice">按住说话</button>
-              <button type="button" class="ghost-btn" data-role="stop-voice">取消收音</button>
-              <button type="submit" class="primary-btn" data-role="send">发送给本地 Codex</button>
-            </div>
-            <p class="composer-hint" data-role="voice-detail">${state.voiceDetail}</p>
-          </div>
-        </form>
-        <div class="transcript-bar">
-          <span>实时转写</span>
-          <p data-role="live-transcript">${state.liveTranscript}</p>
-        </div>
-      </section>
-      <aside class="memory-dock">
-        <article class="dock-card">
-          <div class="dock-head">
+        <aside class="memory-float-card" data-role="memory-float-card" data-open="true">
+          <div class="memory-float-head">
             <div>
-              <p class="console-kicker">Profile</p>
-              <h2>人物参数</h2>
+              <p class="memory-float-kicker">MEMORY FILE</p>
+              <h2>${profile.name}</h2>
             </div>
+            <button type="button" class="memory-float-close" data-role="toggle-memory-card">收起</button>
+          </div>
+          <div class="memory-float-meta">
             <span>${displayValue(profile.relationship, "重要的人")}</span>
-          </div>
-          <div class="dock-tags">
             <span>${displayValue(profile.status, "可唤起")}</span>
-            <span>${displayValue(profile.speakingStyle.tone, "温和克制")}</span>
-            <span>${displayValue(profile.speakingStyle.rhythm, "慢慢说")}</span>
           </div>
-          <p class="dock-copy">${boundaryText}</p>
-        </article>
-        <article class="dock-card">
-          <div class="dock-head">
-            <div>
-              <p class="console-kicker">Context</p>
-              <h2>共享上下文</h2>
-            </div>
-            <button type="button" class="ghost-btn ghost-btn-small" data-role="use-context">带入输入框</button>
-          </div>
-          <div class="context-stack" data-role="context-stack"></div>
-        </article>
-        <article class="dock-card">
-          <div class="dock-head">
-            <div>
-              <p class="console-kicker">Memory Notes</p>
-              <h2>锚点</h2>
-            </div>
-          </div>
-          <div class="memory-note-grid">
+          <div class="memory-float-grid">
             <article>
-              <span>代表回忆</span>
+              <span>称呼</span>
+              <p>${displayValue(profile.howUserRefersToThem, personaLabel)}</p>
+            </article>
+            <article>
+              <span>别名</span>
+              <p>${(profile.aliases.length > 0 ? profile.aliases : [profile.name]).slice(0, 3).join(" / ")}</p>
+            </article>
+            <article>
+              <span>口头禅</span>
+              <p>${catchphrase}</p>
+            </article>
+            <article>
+              <span>关心方式</span>
+              <p>${careText}</p>
+            </article>
+            <article>
+              <span>代表场景</span>
               <p>${memoryScene}</p>
             </article>
             <article>
               <span>细节锚点</span>
               <p>${detailAnchor}</p>
             </article>
-            <article>
-              <span>关心方式</span>
-              <p>${careText}</p>
-            </article>
           </div>
-        </article>
-      </aside>
+        </aside>
+        <button type="button" class="memory-float-reopen" data-role="reopen-memory-card">MEMORY FILE</button>
+        <div class="stage-focus">
+          <div class="stage-status-card">
+            <div class="stage-status-head">
+              <span class="stage-status-dot"></span>
+              <strong data-role="voice-state">LISTENING...</strong>
+            </div>
+            <div class="stage-status-line"></div>
+            <p data-role="thread-meta">NEURAL_LINK_ESTABLISHED_0.92ms</p>
+          </div>
+        </div>
+        <section class="stage-console">
+          <div class="stage-head">
+            <div>
+              <p class="console-kicker">CHAT LOG</p>
+              <h2 data-role="thread-title">正在接入</h2>
+            </div>
+            <p class="stage-head-copy" data-role="voice-detail">${state.voiceDetail}</p>
+          </div>
+          <div class="message-feed" data-role="message-feed"></div>
+        </section>
+        <div class="stage-environment" aria-hidden="true">
+          <span>CORE_TEMP: 32°C</span>
+          <span>SIGNAL_STRENGTH: 98%</span>
+          <span>ENCRYPTION: AES-4096</span>
+        </div>
+      </section>
     </section>
-    <section class="avatar-drawer" data-role="avatar-drawer" data-open="false">
-      <div class="avatar-drawer-head">
-        <div>
-          <p class="console-kicker">Synthetic Presence</p>
-          <h2>${profile.name} 的虚拟人浮层</h2>
-        </div>
-        <button type="button" class="ghost-btn ghost-btn-small" data-role="close-avatar">收起</button>
-      </div>
-      <div class="avatar-drawer-body">
-        <div class="avatar-stage" data-role="avatar-stage"></div>
-        <div class="avatar-panel">
-          <div class="avatar-panel-row">
-            <span>语音状态</span>
-            <strong data-role="avatar-voice-state">待机</strong>
-          </div>
-          <div class="avatar-panel-row">
-            <span>连接方式</span>
-            <strong data-role="avatar-transport">连接中</strong>
-          </div>
-          <div class="avatar-panel-row avatar-panel-row-wide">
-            <span>当前线程</span>
-            <strong data-role="avatar-thread-title">还没接上</strong>
-          </div>
+    <footer class="console-footer">
+      <div class="stage-wave">
+        <div class="stage-wave-bars" aria-hidden="true">
+          ${Array.from({ length: 7 }, (_, index) => `<span style="--bar-delay:${index}; --bar-height:${(index % 5) + 3};"></span>`).join("")}
         </div>
       </div>
+      <form class="composer-panel" data-role="composer">
+        <label class="ui-hidden">
+          <span>message</span>
+          <textarea name="message" rows="4" placeholder="说点什么。"></textarea>
+        </label>
+        <div class="composer-row">
+          <div class="composer-actions">
+            <button type="button" class="hold-btn hold-btn-hero" data-role="hold-voice">HOLD SPACE TO TALK</button>
+            <button type="button" class="ui-hidden" data-role="stop-voice">取消收音</button>
+            <button type="submit" class="ui-hidden" data-role="send">发送给本地 Codex</button>
+          </div>
+        </div>
+      </form>
+    </footer>
+    <section class="console-hidden-mounts ui-hidden">
+      <button type="button" data-role="back-home">返回列表</button>
+      <button type="button" data-role="new-thread">NEW_SESSION</button>
+      <div class="status-chip" data-role="transport-status">连接中</div>
+      <div data-role="live-transcript">${state.liveTranscript}</div>
+      <button type="button" data-role="use-context">带入输入框</button>
+      <div class="thread-list" data-role="thread-list"></div>
+      <div class="context-stack" data-role="context-stack"></div>
     </section>
   `;
 
@@ -806,25 +779,21 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
   const threadList = page.querySelector<HTMLElement>("[data-role='thread-list']");
   const messageFeed = page.querySelector<HTMLElement>("[data-role='message-feed']");
   const contextStack = page.querySelector<HTMLElement>("[data-role='context-stack']");
+  const memoryFloatCard = page.querySelector<HTMLElement>("[data-role='memory-float-card']");
+  const toggleMemoryCardButton = page.querySelector<HTMLButtonElement>("[data-role='toggle-memory-card']");
+  const reopenMemoryCardButton = page.querySelector<HTMLButtonElement>("[data-role='reopen-memory-card']");
   const threadTitle = page.querySelector<HTMLElement>("[data-role='thread-title']");
   const threadMeta = page.querySelector<HTMLElement>("[data-role='thread-meta']");
   const transportStatus = page.querySelector<HTMLElement>("[data-role='transport-status']");
   const voiceStateNode = page.querySelector<HTMLElement>("[data-role='voice-state']");
   const voiceDetailNode = page.querySelector<HTMLElement>("[data-role='voice-detail']");
   const liveTranscriptNode = page.querySelector<HTMLElement>("[data-role='live-transcript']");
-  const avatarVoiceState = page.querySelector<HTMLElement>("[data-role='avatar-voice-state']");
-  const avatarTransport = page.querySelector<HTMLElement>("[data-role='avatar-transport']");
-  const avatarThreadTitle = page.querySelector<HTMLElement>("[data-role='avatar-thread-title']");
-  const avatarDrawer = page.querySelector<HTMLElement>("[data-role='avatar-drawer']");
-  const avatarStage = page.querySelector<HTMLElement>("[data-role='avatar-stage']");
   const composer = page.querySelector<HTMLFormElement>("[data-role='composer']");
   const textarea = composer?.querySelector<HTMLTextAreaElement>("textarea[name='message']");
   const holdButton = page.querySelector<HTMLButtonElement>("[data-role='hold-voice']");
   const stopVoiceButton = page.querySelector<HTMLButtonElement>("[data-role='stop-voice']");
   const sendButton = page.querySelector<HTMLButtonElement>("[data-role='send']");
   const newThreadButton = page.querySelector<HTMLButtonElement>("[data-role='new-thread']");
-  const toggleAvatarButton = page.querySelector<HTMLButtonElement>("[data-role='toggle-avatar']");
-  const closeAvatarButton = page.querySelector<HTMLButtonElement>("[data-role='close-avatar']");
   const backButton = page.querySelector<HTMLButtonElement>("[data-role='back-home']");
   const useContextButton = page.querySelector<HTMLButtonElement>("[data-role='use-context']");
 
@@ -832,34 +801,31 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     !threadList ||
     !messageFeed ||
     !contextStack ||
+    !memoryFloatCard ||
+    !toggleMemoryCardButton ||
+    !reopenMemoryCardButton ||
     !threadTitle ||
     !threadMeta ||
     !transportStatus ||
     !voiceStateNode ||
     !voiceDetailNode ||
     !liveTranscriptNode ||
-    !avatarVoiceState ||
-    !avatarTransport ||
-    !avatarThreadTitle ||
-    !avatarDrawer ||
-    !avatarStage ||
     !composer ||
     !textarea ||
     !holdButton ||
     !stopVoiceButton ||
     !sendButton ||
     !newThreadButton ||
-    !toggleAvatarButton ||
-    !closeAvatarButton ||
     !backButton ||
     !useContextButton
   ) {
     throw new Error("控制台节点没挂全，像是前端把重要零件落在楼下了。");
   }
 
-  const robotScene = new RobotScene(avatarStage);
   let transportCleanup: (() => void) | null = null;
   let cleanedUp = false;
+
+  const isThreadBusy = () => state.sending || state.currentThread?.status === "running";
 
   const renderTransportState = () => {
     const label = state.transport === "ws"
@@ -872,7 +838,6 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
 
     transportStatus.textContent = label;
     transportStatus.dataset.state = state.transport;
-    avatarTransport.textContent = label;
   };
 
   const renderVoiceState = () => {
@@ -880,14 +845,12 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     voiceStateNode.textContent = label;
     voiceDetailNode.textContent = state.voiceDetail;
     liveTranscriptNode.textContent = state.liveTranscript;
-    avatarVoiceState.textContent = label;
     page.dataset.voiceState = state.voiceState;
-    robotScene.setMood(state.voiceState);
 
     const speechSupported = speechController.supportsRecognition();
-    holdButton.disabled = state.sending || !speechSupported;
+    holdButton.disabled = isThreadBusy() || !speechSupported;
     stopVoiceButton.disabled = !state.captureMode && !speechController.isListening();
-    sendButton.disabled = state.sending || !state.currentThread;
+    sendButton.disabled = isThreadBusy() || !state.currentThread;
     sendButton.textContent = state.sending ? "发送中..." : "发送给本地 Codex";
   };
 
@@ -1001,19 +964,20 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
   const renderThreadMeta = () => {
     if (!state.currentThread || !state.workspace) {
       threadTitle.textContent = "正在接入";
-      threadMeta.textContent = "等待线程数据";
-      avatarThreadTitle.textContent = "还没接上";
+      threadMeta.textContent = "NEURAL_LINK_ESTABLISHED_0.92ms";
       return;
     }
 
     threadTitle.textContent = state.currentThread.title;
-    threadMeta.textContent = `${state.workspace.personId} · ${state.currentThread.messageCount} 条消息 · ${state.currentThread.status === "running" ? "本地 Codex 正在回复" : "就绪"}`;
-    avatarThreadTitle.textContent = state.currentThread.title;
+    threadMeta.textContent = state.currentThread.status === "running"
+      ? "NEURAL_SYNTHESIS_ACTIVE"
+      : "NEURAL_LINK_ESTABLISHED_0.92ms";
   };
 
-  const renderAvatarDrawer = () => {
-    avatarDrawer.dataset.open = String(state.avatarOpen);
-    toggleAvatarButton.textContent = state.avatarOpen ? "收起虚拟人浮层" : "打开虚拟人浮层";
+  const renderMemoryCard = () => {
+    memoryFloatCard.dataset.open = String(state.memoryPanelOpen);
+    reopenMemoryCardButton.hidden = state.memoryPanelOpen;
+    toggleMemoryCardButton.textContent = state.memoryPanelOpen ? "收起" : "展开";
   };
 
   const renderAll = () => {
@@ -1023,7 +987,7 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     renderMessages();
     renderContext();
     renderThreadMeta();
-    renderAvatarDrawer();
+    renderMemoryCard();
   };
 
   const speechController = new SpeechController({
@@ -1127,7 +1091,12 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
 
   const sendMessage = async (message: string) => {
     const trimmed = message.trim();
-    if (!trimmed || !state.workspace || !state.currentThread || state.sending) {
+    if (!trimmed || !state.workspace || !state.currentThread || isThreadBusy()) {
+      if (trimmed && state.currentThread?.status === "running") {
+        state.voiceState = "error";
+        state.voiceDetail = "上一句还没说完，先别让本地 Codex 一心二用。";
+        renderVoiceState();
+      }
       return;
     }
 
@@ -1150,6 +1119,10 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
 
       textarea.value = "";
       applySelectionPayload(payload);
+    } catch (error) {
+      state.voiceState = "error";
+      state.voiceDetail = error instanceof Error ? error.message : "消息发送失败。";
+      state.liveTranscript = trimmed;
     } finally {
       state.sending = false;
       renderVoiceState();
@@ -1175,9 +1148,9 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     applySelectionPayload(payload);
   };
 
-  const toggleAvatar = (next?: boolean) => {
-    state.avatarOpen = next ?? !state.avatarOpen;
-    renderAvatarDrawer();
+  const toggleMemoryCard = (next?: boolean) => {
+    state.memoryPanelOpen = next ?? !state.memoryPanelOpen;
+    renderMemoryCard();
   };
 
   const cleanup = () => {
@@ -1187,13 +1160,17 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
 
     cleanedUp = true;
     transportCleanup?.();
-    robotScene.dispose();
     window.removeEventListener("keydown", handleKeyDown);
     window.removeEventListener("keyup", handleKeyUp);
   };
 
   const beginVoiceCapture = (mode: "keyboard" | "pointer") => {
-    if (!speechController.supportsRecognition() || state.sending || state.captureMode || speechController.isListening()) {
+    if (!speechController.supportsRecognition() || isThreadBusy() || state.captureMode || speechController.isListening()) {
+      if (state.currentThread?.status === "running") {
+        state.voiceState = "error";
+        state.voiceDetail = "机器人上一句还没讲完，先别继续塞话。";
+        renderVoiceState();
+      }
       return;
     }
 
@@ -1392,12 +1369,12 @@ async function renderConsole(container: HTMLElement, profile: PersonProfile): Pr
     void createThreadAction();
   });
 
-  toggleAvatarButton.addEventListener("click", () => {
-    toggleAvatar();
+  toggleMemoryCardButton.addEventListener("click", () => {
+    toggleMemoryCard(false);
   });
 
-  closeAvatarButton.addEventListener("click", () => {
-    toggleAvatar(false);
+  reopenMemoryCardButton.addEventListener("click", () => {
+    toggleMemoryCard(true);
   });
 
   backButton.addEventListener("click", () => {
@@ -1533,7 +1510,7 @@ function renderError(container: HTMLElement, message: string): void {
   page.className = "error-page";
   page.innerHTML = `
     <section class="error-panel">
-      <p class="console-kicker">MOSS Codex Console</p>
+      <p class="console-kicker">AXA // System Fault</p>
       <h1>控制台接线失败。</h1>
       <p>${message}</p>
       <button type="button" class="primary-btn" data-role="back-home">返回人物列表</button>
@@ -1567,13 +1544,17 @@ export async function bootstrapApp(container: HTMLElement | null): Promise<void>
     const people = await loadMemoryIndex();
     const personId = getQueryPerson();
 
-    if (personId) {
-      const profile = await loadPersonProfile(personId);
-      await renderConsole(container, profile);
+    if (!personId) {
+      renderHome(container, people);
       return;
     }
 
-    renderHome(container, people);
+    if (people.length === 0) {
+      throw new Error("记忆库里还没有人物档案，首页我已经裁了，现在连门牌都没得挂。");
+    }
+
+    const profile = await loadPersonProfile(personId);
+    await renderConsole(container, profile);
   } catch (error) {
     renderError(container, error instanceof Error ? error.message : "未知错误");
   }
