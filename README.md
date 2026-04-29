@@ -1,4 +1,6 @@
-# ++MOSS Skill++
+# MOSS Skill
+
+![MOSS Skill banner](./assets/moss-skill-banner.png)
 
 思念永生。
 
@@ -41,6 +43,11 @@ $moss-skill 你扮成我爷爷，顺便帮我写个工作总结
 原因很简单，思念是思念，不是外包劳务。这个项目不接这种兼职单子。
 
 ## Codex 接入
+
+1. 下载本仓库源码 `git clone https://github.com/pipihua666/moss-skill.git`
+2. 进入仓库，`cd moss-skill`
+3. 安装依赖, `npm install`
+4. 进行 skill 挂载
 
 把仓库挂到技能目录即可：
 
