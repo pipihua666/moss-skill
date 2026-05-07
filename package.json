@@ -10,11 +10,13 @@
     "app:server": "node scripts/memory-app-server.mjs",
     "user": "node scripts/launch-memory-user.mjs",
     "codex:launch": "node scripts/codex-launch-memory.mjs",
+    "codex:stop": "node scripts/codex-stop-memory.mjs",
     "codex:push-context": "node scripts/codex-push-context.mjs",
     "codex:sync-events": "node scripts/codex-sync-events.mjs",
     "codex:read-events": "node scripts/codex-read-events.mjs",
     "app:launch": "node scripts/codex-launch-memory.mjs",
     "app:sync": "node scripts/codex-sync-events.mjs",
+    "lint": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },

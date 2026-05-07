@@ -15,6 +15,7 @@ export const POLL_INTERVAL_MS = 500;
 export const AVATAR_LOG = path.join(os.tmpdir(), "moss-user-dev.log");
 export const BRIDGE_LOG = path.join(os.tmpdir(), "moss-memory-bridge.log");
 export const STATE_FILE = path.join(os.tmpdir(), "moss-memory-bridge-state.json");
+export const PROCESS_FILE = path.join(os.tmpdir(), "moss-memory-processes.json");
 const REQUIRED_RPC_METHODS = [
   "persona/select",
   "thread/create",
@@ -246,6 +247,38 @@ function emptyState() {
   };
 }
 
+function readProcessRegistry() {
+  try {
+    if (!fs.existsSync(PROCESS_FILE)) {
+      return {};
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(PROCESS_FILE, "utf8"));
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeProcessRegistry(registry) {
+  fs.mkdirSync(path.dirname(PROCESS_FILE), { recursive: true });
+  fs.writeFileSync(PROCESS_FILE, JSON.stringify(registry, null, 2));
+}
+
+function rememberProcess(name, pid, metadata = {}) {
+  if (!pid) {
+    return;
+  }
+
+  const registry = readProcessRegistry();
+  registry[name] = {
+    pid,
+    updatedAt: Date.now(),
+    ...metadata
+  };
+  writeProcessRegistry(registry);
+}
+
 function readLog(logFile) {
   try {
     if (!fs.existsSync(logFile)) {
@@ -404,6 +437,7 @@ export function startDetached(command, args, logFile, cwd = process.cwd()) {
   child.stdout.pipe(logStream);
   child.stderr.pipe(logStream);
   child.unref();
+  return child;
 }
 
 export async function ensureAvatarServer(cwd = process.cwd()) {
@@ -412,7 +446,12 @@ export async function ensureAvatarServer(cwd = process.cwd()) {
     return AVATAR_SERVER_URL;
   }
 
-  startDetached(NPM_BIN, ["run", "dev:user"], AVATAR_LOG, cwd);
+  const child = startDetached(NPM_BIN, ["run", "dev:user"], AVATAR_LOG, cwd);
+  rememberProcess("avatar", child.pid, {
+    port: AVATAR_PORT,
+    command: `${NPM_BIN} run dev:user`,
+    logFile: AVATAR_LOG
+  });
   const started = await waitForHttp(AVATAR_SERVER_URL);
 
   if (!started) {
@@ -447,7 +486,12 @@ export async function ensureBridgeServer(cwd = process.cwd()) {
     throw new Error(formatIncompatibleBridgeError(BRIDGE_LOG, "本地记忆桥服务", BRIDGE_PORT));
   }
 
-  startDetached(process.execPath, ["scripts/memory-app-server.mjs"], BRIDGE_LOG, cwd);
+  const child = startDetached(process.execPath, ["scripts/memory-app-server.mjs"], BRIDGE_LOG, cwd);
+  rememberProcess("bridge", child.pid, {
+    port: BRIDGE_PORT,
+    command: `${process.execPath} scripts/memory-app-server.mjs`,
+    logFile: BRIDGE_LOG
+  });
   const started = await waitForHttp(`${BRIDGE_SERVER_URL}/codex-api/meta/methods`, hasRequiredRpcMethods);
 
   if (!started) {

@@ -620,8 +620,9 @@ function getCurrentThread(workspace, preferredThreadId = null) {
 }
 
 function ensureWorkspace(personId, sessionId = null) {
-  const remembered = findRememberedSession(personId) ?? findRememberedSession(sessionId);
-  const wantedId = asNonEmptyString(sessionId) ?? remembered?.sessionId ?? remembered?.bridgeId ?? randomUUID();
+  const normalizedSessionId = asNonEmptyString(sessionId);
+  const remembered = findRememberedSession(personId) ?? (normalizedSessionId ? findRememberedSession(normalizedSessionId) : null);
+  const wantedId = normalizedSessionId ?? remembered?.sessionId ?? remembered?.bridgeId ?? randomUUID();
   const existing = findWorkspace(wantedId) ?? findWorkspace(personId);
 
   if (existing) {
@@ -1033,7 +1034,8 @@ function handleAppNotification(method, params) {
       return;
     }
 
-    assistant.text = String(params.item.text ?? assistant.text ?? "");
+    const completedText = String(params.item.text ?? "").trim();
+    assistant.text = completedText || assistant.text;
     assistant.pending = false;
     thread.preview = toPreview(assistant.text);
     pending.completed = true;

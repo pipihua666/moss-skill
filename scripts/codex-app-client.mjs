@@ -7,6 +7,14 @@ function asError(error, fallback) {
   return error instanceof Error ? error : new Error(fallback);
 }
 
+function asNonEmptyText(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().length > 0 ? value : "";
+}
+
 export class CodexAppClient {
   constructor(options = {}) {
     this.cwd = options.cwd ?? process.cwd();
@@ -256,7 +264,10 @@ export class CodexAppClient {
       case "item/completed": {
         const pending = this.pendingTurns.get(params.threadId);
         if (pending && params.item?.type === "agentMessage") {
-          pending.completedMessages.push(String(params.item.text ?? ""));
+          const text = asNonEmptyText(params.item.text);
+          if (text) {
+            pending.completedMessages.push(text);
+          }
         }
         break;
       }
@@ -281,7 +292,7 @@ export class CodexAppClient {
     }
 
     this.pendingTurns.delete(threadId);
-    const text = pending.completedMessages.at(-1) ?? pending.textDeltas.join("");
+    const text = pending.completedMessages.at(-1) || pending.textDeltas.join("");
     pending.resolve({
       threadId,
       turnId: pending.turnId,
